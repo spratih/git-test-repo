@@ -1,0 +1,98 @@
+
+pipeline {
+agent any
+environment
+{ //started Envionment
+jobName= "${JOB_NAME}"
+DISABLE_AUTH = 'True'
+} //Ending Environment
+stages
+{// Starting Stages
+stage('Git Clean Up')
+{
+steps
+{
+script
+{
+if(What=='Git Cleanup')
+{
+echo 'git Clean Up is getting done'
+echo "User id: $BUILD_USER"
+emailext body: '"User id: $BUILD_USER"', subject: 'testing', to: 'negupta@altimetrik.com,cc:gnehaneha217@gmail.com'
+}
+}
+}
+}
+stage('Jenkins Disabling')
+{
+steps
+{
+script
+{
+if(What=='Jenkins Disabling')
+{
+echo 'Jenkins Disabling is getting done'
+echo "User id: $BUILD_USER"
+var = 'test'
+Jenkins.instance.getItem("$var").disable()
+//Jenkins.instance.getItem('test').disable()
+}
+}
+}
+}
+stage('Jenkins Clean Up')
+{
+steps
+{
+script
+{
+if(What=='Jenkins Cleanup')
+{
+wrap([$class: 'BuildUser']) {
+script {
+USER = "${BUILD_USER}"
+}
+}
+echo "${USER}"
+echo 'Jenkins Clean Up is getting done'
+}
+}
+}
+}
+stage('Email Notification')
+{
+steps
+{
+script
+{
+if(What=='Email Notification ')
+{
+// Set how old the jobs to list should be (in days)
+def numDaysBack = 7
+def cutOfDate = System.currentTimeMillis() - 1000L * 60 * 60 * 24 * numDaysBack
+for (job in Jenkins.instance.getAllItems(Job.class))
+{
+build = job.getLastSuccessfulBuild()
+if (build != null && build.getTimeInMillis() < cutOfDate || build == null )
+//if(build == null )
+{
+println job.getFullName()
+// println "${job.name}"
+//echo env.DISABLE_AUTH
+echo "User id: $BUILD_USER_ID@paypal.com"
+var = "${job.name}"
+sh "echo ${var}"
+echo "$var"
+var2 = 'test'
+//Jenkins.instance.getItem("$var").disable()
+Jenkins.instance.getItem("$var").setDisabled(true)
+//emailext body: 'testing', subject: 'testing', to: 'nehag9466@gmail.com,cc:gnehaneha217@gmail.com'
+}
+}
+}
+echo 'Email Notification is getting done'
+//emailext body: 'A Test EMail', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: 'Test'
+}//script ending
+}//steps ending
+}//stage ending
+}//stages ending
