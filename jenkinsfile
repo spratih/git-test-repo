@@ -1,21 +1,141 @@
-pipeline {
-    agent any
-    stages {
-        stage('source code') {
-            steps {
-                     git branch: 'master', credentialsId: 'jenkins', url: 'ssh://git@github.com:spratih/git-test-repo.git'
-                     sh ''' presentdate=`date +'%s'`'
-                     sh '''list_of_branches=$(curl -s -u $user_name:$password https://api.github.com/repos/$user_name/$url/branches | grep 'name' | awk '{print $2}')'''
-                     sh '''for branch in "{$list_of_branches}"; do'''
-                     sh '''api_branch_name=$(echo "$branch" | cut -d'"' -f 2)'''
-                     sh '''last_updated_date=$(curl -s -u $user_name:$password https://api.github.com/repos/$user_name/$url/branches/$api_branch_name | grep 'date'| awk '{print $2}'| sed '$d')'''
-                     sh '''api_last_updated_date=$(echo $last_updated_date | cut -d'"' -f 2)'''
-                     sh '''last_updated_date_sec=$(date -d $api_last_updated_date +%s)'''
-                     sh '''numberofdays=$(( ($presentdate - $last_updated_date_sec)/(60*60*24) ))'''
-                     if ( "$numberofdays" > "1") {
-                     echo "Branch $api_branch_name is updated $numberofdays days back"
-                     }              
-                }
-            }
-        }
-    }
+def var =''
+pipeline
+{
+agent any
+environment
+{ //started Envionment
+jobName= "${JOB_NAME}"
+DISABLE_AUTH = 'True'
+
+
+
+} //Ending Environment
+
+
+
+
+stages
+{// Starting Stages
+stage('Git Clean Up')
+{
+steps
+{
+script
+{
+if(What=='Git Cleanup')
+{
+echo 'git Clean Up is getting done'
+sh 'curl -u spratih:Tataipl@2022 -O https://github.com/spratih/git-test-repo/blob/master/jenkins.txt'
+//git branch: 'master', credentialsId: 'stest_Git', url: 'ssh://git@github.com:spratih/git-test-repo.git'
+sh 'cat jenkins.txt'
+sh "ls -lat"
+}
+}
+}
+}
+
+
+
+stage('Jenkins Disabling')
+{
+steps
+{
+script
+{
+if(What=='Jenkins Disabling')
+{
+echo 'Jenkins Disabling is getting done'
+// Set how old the jobs to list should be (in days)
+def numDaysBack = 7
+def cutOfDate = System.currentTimeMillis() - 1000L * 60 * 60 * 24 * numDaysBack
+def date = new Date()
+for (job in Jenkins.instance.getAllItems(Job.class))
+{
+build = job.getLastSuccessfulBuild()
+if (build != null && build.getTimeInMillis() < cutOfDate || build == null )
+{
+println job.getFullName()
+echo "User id: $BUILD_USER_ID@paypal.com"
+var2 = "${job.name}"
+//Jenkins.instance.getItem("$var").disable()
+Jenkins.instance.getItem("$var2").setDisabled(true)
+}
+
+}
+
+
+
+}
+}
+}
+}
+
+stage('Jenkins Clean Up')
+{
+steps
+{
+script
+{
+if(What=='Jenkins Cleanup')
+{
+wrap([$class: 'BuildUser'])
+{
+script
+{
+USER = "${BUILD_USER}"
+}
+}
+echo "${USER}"
+echo 'Jenkins Clean Up is getting done'
+}
+}
+}
+}
+
+stage('Email Notification')
+{
+steps
+{
+script
+{
+if(What=='Email Notification ')
+{
+// Set how old the jobs to list should be (in days)
+echo 'Email Notification is getting done'
+def numDaysBack = 7
+def cutOfDate = System.currentTimeMillis() - 1000L * 60 * 60 * 24 * numDaysBack
+def date = new Date()
+for (job in Jenkins.instance.getAllItems(Job.class))
+{
+build = job.getLastSuccessfulBuild()
+if (build != null && build.getTimeInMillis() < cutOfDate || build == null )
+//if(build == null )
+{
+println job.getFullName()
+echo "User id: $BUILD_USER_ID@paypal.com"
+var = var +"\n"+"${job.name}"
+//emailext body: '"User id: $BUILD_USER" ', subject: 'Jenkins Clean Up Project List', to: 'negupta@altimetrik.com,cc:nehag9466@gmail.com'
+
+//Jenkins.instance.getItem("$var").disable()
+//Jenkins.instance.getItem("$var").setDisabled(true)
+}
+
+}
+echo "$var"
+writeFile(file: 'jenkins_cleanup.txt', text: var)
+sh 'cat jenkins_cleanup.txt'
+def data = readFile(file: 'jenkins_cleanup.txt')
+println(data)
+emailext attachmentsPattern: 'jenkins_cleanup.txt', body: '"User id: $BUILD_USER" Attached is the Cleanup project List. Below is the URL https://github.com/spratih/git-test-repo/blob/master/jenkins.txt to update it ', subject: 'Jenkins Clean Up Project List', to: 'negupta@altimetrik.com,cc:nehag9466@gmail.com, paypal-sre-team@altimetrik.com'
+
+
+
+
+}// if ending
+}//script ending
+}//steps ending
+}//stage ending
+
+
+}//stages ending
+}//pipeline ending
