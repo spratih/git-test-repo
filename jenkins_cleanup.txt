@@ -1,0 +1,10 @@
+Deletiontestpipeline
+email
+email notification
+fghj
+gitsub
+Master pipeline
+readwrite
+test
+Test Pipeline
+test1
