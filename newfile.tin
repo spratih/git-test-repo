@@ -1,0 +1,5 @@
+for k in $(git branch --format="%(refname:short)" --merged master); do 
+  if (($(git log -1 --since='1 month ago' -s $k|wc -l)==0)); then
+    echo git branch -d $k
+  fi
+done
