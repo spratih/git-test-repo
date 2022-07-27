@@ -1,17 +1,14 @@
 asdf
 Deletionbyname
 Deletiontestpipeline
-email
 email notification
 fghj
 git
 Git Cleanup
 gitsub
-gittest
 gittest123
 nehausertest
 pavan
-readwrite
 saitest
 subhendhutest
 testdata
