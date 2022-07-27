@@ -1,14 +1,1 @@
 asdf
-Deletionbyname
-Deletiontestpipeline
-email notification
-fghj
-git
-Git Cleanup
-gitsub
-gittest123
-nehausertest
-pavan
-saitest
-subhendhutest
-testdata
